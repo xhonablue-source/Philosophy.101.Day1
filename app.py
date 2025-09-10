@@ -1,6 +1,6 @@
 """
-PHL 101 Day 1 - 
-Presentation slides with student activities, quizzes, and resources
+PHL 101 Day 1 - Complete Interactive Philosophy & Religion App
+Combines presentation slides with student activities, quizzes, and resources
 """
 
 import streamlit as st
@@ -657,8 +657,18 @@ def sidebar_navigation() -> None:
         if st.sidebar.checkbox("📋 Show Presenter Notes"):
             st.sidebar.markdown("**Notes:**")
             st.sidebar.info(current_slide.get("presenter_notes", "No notes for this slide."))
-    
+            
     elif mode == "📝 Student Activities":
+        # Add export functionality for student mode
+        st.sidebar.markdown("---")
+        if st.sidebar.button("💾 Export My Work"):
+            json_str = export_student_work()
+            st.sidebar.download_button(
+                "📄 Download Progress",
+                json_str,
+                file_name=f"phl101_day1_progress_{datetime.now().strftime('%Y%m%d')}.json",
+                mime="application/json"
+            )
         return "student_activities"
     elif mode == "📚 Resources":
         return "resources"
