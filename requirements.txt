@@ -1,0 +1,7 @@
+# requirements.txt for day1_phl101_app_full.py
+
+streamlit
+openai
+python-pptx
+flask
+requests
