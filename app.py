@@ -1,15 +1,15 @@
 """
-day1_phl101_app_full.py — FINAL VERSION
+day1_phl101_app_full.py — FINAL VERSION with full slide presentation
 
 Streamlit app for Day 1 — PHL 101
 Includes:
+ - Full slide presentation content from initial prompt
  - Slide navigation with presenter notes and timers
  - Student journaling
  - Multiple-choice quizzes
  - Short-answer auto-grader (keyword-based)
  - LLM-powered quiz grading & Q&A assistant (grounded in Day 1 lesson)
  - PPTX export for Google Slides
- - Optional Flask LLM proxy server for secure API calls
 """
 
 import streamlit as st
@@ -26,43 +26,38 @@ try:
     from pptx.util import Pt
 except Exception:
     Presentation = None
-try:
-    from flask import Flask, request, jsonify
-    import requests
-except Exception:
-    Flask = None
 
-# ----------------- Lesson Data -----------------
+# ----------------- Full Slide Presentation -----------------
 SLIDES = [
-    {"title": "Title", "subtitle": "🎓 What is Religion? What is Philosophy?",
-     "content": "PHL 101 – Comparative Religions I\nProfessor Xavier Honablue, M.Ed.",
+    {"title": "Slide 1", "subtitle": "Welcome & Introductions",
+     "content": "PHL 101 – Comparative Religions I\nProfessor Xavier Honablue, M.Ed.\nBackground: Mathematics • Computer Science • Philosophy • Education",
      "notes": "Welcome students warmly. Share your background briefly. Set collaborative tone."},
-    {"title": "Course Objectives", "subtitle": "🎯 Our Journey Together",
-     "content": "World religions, Indigenous traditions, philosophical approaches, critical thinking, personal reflection.",
+    {"title": "Slide 2", "subtitle": "Course Objectives",
+     "content": "By the end of this course, students will:\n- Explore major world religions\n- Engage Indigenous traditions\n- Apply philosophical approaches\n- Develop critical thinking\n- Reflect personally on religion and philosophy",
      "notes": "Emphasize comparative approach and respect for traditions."},
-    {"title": "Icebreaker", "subtitle": "🤔 The Big Questions",
-     "content": "Pair Discussion (10 minutes): What is religion? What is philosophy? Where do they overlap?",
+    {"title": "Slide 3", "subtitle": "Icebreaker Activity",
+     "content": "🤔 Pair Discussion (10 minutes):\n1. What is religion?\n2. What is philosophy?\n3. Where do they overlap?",
      "timer_minutes": 10,
-     "notes": "Give students the full 10 minutes; walk the room; collect word cloud ideas."},
-    {"title": "Philosophy Meets Religion", "subtitle": "🧠 Philosophy Meets Religion",
-     "content": "Definitions, core questions shared by both (ultimate reality, meaning, morality).",
-     "notes": "Explain etymology, show overlap."},
-    {"title": "Examples", "subtitle": "💡 A Tale of Two Searches",
-     "content": "Plato's Cave vs Moses and the Exodus — journeys from ignorance to truth.",
-     "notes": "Use the two stories to show shared narrative arc."},
-    {"title": "Group Activity", "subtitle": "🎲 Sorting the Big Questions",
-     "content": "Sort questions into Philosophy / Religion / Both (15 minutes).",
+     "notes": "Give students 10 minutes. Walk around the room and listen in."},
+    {"title": "Slide 4", "subtitle": "Philosophy Meets Religion",
+     "content": "Both ask core questions:\n- What is ultimate reality?\n- What is the purpose of life?\n- How should we live?\nPhilosophy = love of wisdom\nReligion = binding together, seeking meaning",
+     "notes": "Explain etymology and overlapping concerns."},
+    {"title": "Slide 5", "subtitle": "Examples: Stories of Truth-Seeking",
+     "content": "💡 Plato's Cave: prisoners mistake shadows for reality.\n💡 Exodus: Israelites journey from slavery to freedom.\nBoth = moving from ignorance to truth.",
+     "notes": "Compare narrative arcs of Plato and Moses."},
+    {"title": "Slide 6", "subtitle": "Group Activity: Sorting Questions",
+     "content": "🎲 Sort questions into Philosophy / Religion / Both:\n- Is there life after death?\n- What is justice?\n- Why is there suffering?\n- What is the ultimate reality?",
      "timer_minutes": 15,
-     "notes": "Encourage debate; most will end up 'Both'."},
-    {"title": "Defining Religion", "subtitle": "🔬 How Scholars Define Religion",
-     "content": "Durkheim (social glue), Tylor (belief in spiritual beings), Tillich (ultimate concern).",
-     "notes": "Ask which resonates and why."},
-    {"title": "Interactive Debate", "subtitle": "💬 Let's Debate!",
-     "content": "Team Durkheim, Team Tylor, Team Tillich. Is Buddhism a religion under each definition?",
-     "notes": "Moderate debate; present 'challenge question'."},
-    {"title": "Wrap-Up & Homework", "subtitle": "🎯 Exit Ticket & Next Steps",
-     "content": "Exit ticket: One question about life or religion you hope the class will answer.\nHomework: CrashCourse/TED-Ed videos + 1 paragraph reflection.",
-     "notes": "Collect exit tickets & preview Day 2."}
+     "notes": "Encourage debate. Most questions overlap."},
+    {"title": "Slide 7", "subtitle": "Defining Religion",
+     "content": "Scholars define religion differently:\n- Durkheim: Social glue, rituals, solidarity\n- Tylor: Belief in spiritual beings\n- Tillich: Ultimate concern",
+     "notes": "Ask students which resonates most."},
+    {"title": "Slide 8", "subtitle": "Interactive Debate",
+     "content": "💬 Teams:\n- Team Durkheim\n- Team Tylor\n- Team Tillich\nDebate: Is Buddhism a religion under each definition?",
+     "notes": "Moderate debate. Pose challenge: what if none fit perfectly?"},
+    {"title": "Slide 9", "subtitle": "Wrap-Up & Homework",
+     "content": "🎯 Exit Ticket: One question about life or religion you hope this class will answer.\nHomework:\n- Watch CrashCourse: Philosophy of Religion\n- Watch TED-Ed: What is Religion?\n- Write 1 paragraph: Which definition of religion resonates with you, and why?",
+     "notes": "Collect exit tickets & preview Day 2 on argument structure."}
 ]
 
 QUIZZES = [
@@ -92,8 +87,10 @@ RESOURCES = {
 DAY2_PREVIEW = """
 Day 2 Preview — Argument Structure
 ---------------------------------
- - Contradiction, Logic, Fallacy, Absurdity (Reductio)
- - Practice identifying premises, conclusions, validity & soundness.
+- Contradiction: incompatible claims
+- Logic: deductive & inductive
+- Fallacies: straw man, ad hominem, false cause
+- Absurdity: reductio ad absurdum
 """
 
 # ----------------- Short-answer auto-grader -----------------
@@ -131,14 +128,9 @@ def generate_pptx_from_slides(slides: List[Dict]) -> bytes:
     buf.seek(0)
     return buf.read()
 
-# ----------------- LLM helpers -----------------
+# ----------------- LLM helper -----------------
 def build_system_prompt_day1() -> str:
-    return f"""
-You are the teaching assistant for PHL 101 — Day 1: What is Religion? What is Philosophy?.
-Base answers strictly on the slides, quizzes, and readings provided.
-When grading, output JSON with: quiz_id, score, pct, per_question (q_index, correct, student_answer, feedback, hint), teacher_note.
-When answering questions, be concise (<150 words), point to slide numbers or resources, and encourage curiosity.
-"""
+    return "You are the teaching assistant for PHL 101 — Day 1: What is Religion? What is Philosophy?. Base answers on slides, quizzes, and resources." 
 
 def ask_llm(openai_key: str, model: str, user_message: str):
     if openai is None:
@@ -157,7 +149,6 @@ def main():
     if 'slide_idx' not in st.session_state:
         st.session_state.slide_idx = 0
 
-    # Sidebar
     with st.sidebar:
         st.title("Day 1 — PHL 101")
         if st.button("Prev"): st.session_state.slide_idx = max(0, st.session_state.slide_idx - 1)
@@ -169,7 +160,6 @@ def main():
             pptx_bytes = generate_pptx_from_slides(SLIDES)
             st.download_button("Download PPTX", pptx_bytes, "Day1_PHL101.pptx")
 
-    # Slide content
     slide = SLIDES[st.session_state.slide_idx]
     st.subheader(slide.get('subtitle'))
     st.markdown(f"### {slide.get('title')}")
@@ -181,21 +171,18 @@ def main():
     if st.checkbox("Show notes"):
         st.info(slide.get('notes',''))
 
-    # Quizzes
     st.markdown("---")
-    st.markdown("### Quizzes")
-    for q in QUIZZES:
-        st.markdown(f"#### {q['title']}")
-        answers = {}
-        for i, item in enumerate(q['questions']):
-            ans = st.radio(item['q'], options=item['choices'], key=f"quiz{q['id']}_{i}")
-            answers[i] = ans
-        if st.button(f"Grade {q['title']}") and openai_key:
-            prompt = f"Grade this quiz: {q['title']} with answers: {answers}"
-            result = ask_llm(openai_key, llm_model, prompt)
-            st.text_area("LLM Grade Result", result, height=300)
+    st.markdown("### Quiz")
+    q = QUIZZES[0]
+    answers = {}
+    for i, item in enumerate(q['questions']):
+        ans = st.radio(item['q'], options=item['choices'], key=f"quiz{q['id']}_{i}")
+        answers[i] = ans
+    if st.button("Grade Quiz") and openai_key:
+        prompt = f"Grade quiz {q['title']} with answers: {answers}"
+        result = ask_llm(openai_key, llm_model, prompt)
+        st.text_area("LLM Grade Result", result, height=300)
 
-    # Short-answer auto-grader demo
     st.markdown("---")
     st.markdown("### Short-answer auto-grader")
     sa = st.text_area("Student answer")
@@ -204,20 +191,17 @@ def main():
         res = short_answer_score(sa, [k.strip() for k in kws.split(',')])
         st.write(res)
 
-    # LLM Q&A
     st.markdown("---")
     st.markdown("### LLM Q&A")
-    q = st.text_input("Ask a question about today's lesson")
+    qtext = st.text_input("Ask a question about today's lesson")
     if st.button("Ask") and openai_key:
-        ans = ask_llm(openai_key, llm_model, q)
+        ans = ask_llm(openai_key, llm_model, qtext)
         st.write(ans)
 
-    # Day 2 preview
     st.markdown("---")
     st.markdown("### Day 2 Preview")
     st.write(DAY2_PREVIEW)
 
-    # Timer
     if st.session_state.get('timer_seconds'):
         rem = st.session_state.timer_seconds - int(time.time() - st.session_state.timer_start)
         if rem <= 0:
@@ -226,7 +210,6 @@ def main():
         else:
             st.info(f"Timer: {rem//60}:{str(rem%60).zfill(2)}")
 
-# ----------------- Entrypoint -----------------
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--run', action='store_true')
