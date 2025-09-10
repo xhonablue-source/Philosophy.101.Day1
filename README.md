@@ -1,1 +1,1 @@
-# Philosphy.101.Day
+# Philosophy.101.Day
