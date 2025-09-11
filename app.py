@@ -1,13 +1,21 @@
 """
 PHL 101 Day 1 - Complete Interactive Philosophy & Religion App
-Combines presentation slides with student activities, quizzes, and resources
+Fixed version with Assignment 1: Philosopher Conversations & Professor Lecture
 """
 
 import streamlit as st
 import time
 import json
+import io
 from datetime import datetime
 from typing import List, Dict, Optional
+
+# Optional imports for enhanced features
+try:
+    import openai
+    HAS_OPENAI = True
+except ImportError:
+    HAS_OPENAI = False
 
 # Configure page
 st.set_page_config(
@@ -28,8 +36,16 @@ if 'student_responses' not in st.session_state:
     st.session_state.student_responses = {}
 if 'quiz_attempts' not in st.session_state:
     st.session_state.quiz_attempts = {}
+if 'assignment1_progress' not in st.session_state:
+    st.session_state.assignment1_progress = {
+        'questions_asked': {'Durkheim': [], 'Tylor': [], 'Tillich': []},
+        'responses_received': {'Durkheim': [], 'Tylor': [], 'Tillich': []},
+        'notes': {'Durkheim': '', 'Tylor': '', 'Tillich': ''},
+        'essays': {'Durkheim': '', 'Tylor': '', 'Tillich': ''},
+        'completed_philosophers': set()
+    }
 
-# Enhanced slide data with the new word origins content
+# Enhanced slide data with corrected encoding
 SLIDES = [
     {
         "id": "welcome",
@@ -267,7 +283,7 @@ SLIDES = [
     },
     {
         "id": "wrap_up",
-        "title": "Wrap-Up & Homework",
+        "title": "Wrap-Up & Next Steps",
         "content": """
         # 🎯 Exit Ticket & Next Steps
         
@@ -283,16 +299,72 @@ SLIDES = [
         
         ## 🌟 Looking Ahead - Day 2 Preview:
         Next class we'll explore:
-        * **Argument Structure:** How to build and evaluate philosophical arguments
+        * **Premise:** Basic building blocks of arguments
+        * **Contradiction:** Incompatible claims that cannot both be true
         * **Logic:** Deductive vs. inductive reasoning
-        * **Fallacies:** Common mistakes in reasoning
-        * **Critical Thinking Tools:** For analyzing religious and philosophical claims
+        * **Fallacies:** Common mistakes in reasoning (straw man, ad hominem, false cause)
+        * **Absurdity:** Reductio ad absurdum - showing positions lead to absurd conclusions
         
         Get ready to develop your philosophical toolkit!
         """,
         "presenter_notes": "Collect exit tickets - valuable data for shaping the course. Preview Day 2 on argument structure."
     }
 ]
+
+# Assignment 1 Philosopher Profiles for LLM
+PHILOSOPHER_PROFILES = {
+    "Durkheim": {
+        "name": "Émile Durkheim",
+        "years": "1858-1917",
+        "background": "I am a French sociologist who founded the academic discipline of sociology. I studied how societies hold together and function, with particular interest in the role of religion in creating social solidarity.",
+        "key_ideas": [
+            "Religion is the social glue that binds communities together",
+            "Sacred rituals create 'collective effervescence' - shared emotional experiences that unite people",
+            "Religious beliefs reflect society's deepest values and moral order",
+            "Modern societies shift from mechanical solidarity (similarity) to organic solidarity (interdependence)"
+        ],
+        "on_premise": "A premise must be grounded in empirical observation of social facts. I believe in studying society scientifically, so any premise about religion should be based on observable social phenomena, not personal beliefs.",
+        "on_contradiction": "Contradictions in religious thought often reflect tensions within society itself. When religious ideas contradict each other, look for the underlying social conflicts they represent.",
+        "on_logic": "Logic in sociology must be inductive - we observe patterns in social behavior and draw conclusions. Deductive reasoning from abstract principles misses the lived reality of how people actually behave in groups.",
+        "on_fallacy": "The greatest fallacy is methodological individualism - trying to explain social phenomena by looking only at individuals. Society is more than the sum of its parts.",
+        "on_absurdity": "What appears absurd in religious practice often serves vital social functions. Seemingly irrational rituals create the very social bonds that hold communities together.",
+        "personality": "methodical, scientific, focused on empirical observation, believes strongly in the power of sociology to understand human behavior"
+    },
+    "Tylor": {
+        "name": "Edward Burnett Tylor",
+        "years": "1832-1917",
+        "background": "I am an English anthropologist, often called the father of cultural anthropology. I developed evolutionary theories of culture and religion, studying how beliefs develop from primitive to advanced forms.",
+        "key_ideas": [
+            "Religion is belief in spiritual beings - this is the minimum definition",
+            "Culture is 'that complex whole which includes knowledge, belief, art, morals, law, custom'",
+            "Religious beliefs evolved from animism (spirits in objects) to polytheism to monotheism",
+            "All cultures can be arranged on an evolutionary scale from savage to civilized"
+        ],
+        "on_premise": "A sound premise about religion must identify the essential element present in all religious systems. I argue this is belief in spiritual beings - gods, souls, spirits, or supernatural forces.",
+        "on_contradiction": "Contradictions arise when we confuse the essential core of religion with its cultural variations. The belief in spiritual beings is universal; how societies express this varies widely.",
+        "on_logic": "Logic requires clear definitions and careful comparison across cultures. We must distinguish between the universal elements of human thought and their particular cultural expressions.",
+        "on_fallacy": "A common fallacy is cultural relativism taken too far - assuming all beliefs are equally valid. Some represent more advanced reasoning about the spiritual realm than others.",
+        "on_absurdity": "What seems absurd in so-called 'primitive' religions often represents early attempts at scientific thinking - trying to explain natural phenomena through spiritual causation.",
+        "personality": "confident in evolutionary progress, believes in objective scientific study of culture, somewhat paternalistic toward 'primitive' peoples but genuinely curious about human diversity"
+    },
+    "Tillich": {
+        "name": "Paul Tillich",
+        "years": "1886-1965",
+        "background": "I am a German-American theologian and philosopher. I lived through both World Wars and experienced exile from Nazi Germany. I sought to bridge theology and modern philosophy, making religious thought relevant to contemporary life.",
+        "key_ideas": [
+            "Religion is ultimate concern - what matters most deeply to a person",
+            "God is not a being but Being-itself, the ground of all existence",
+            "Faith is not belief despite evidence, but ultimate concern about ultimate reality",
+            "Secular movements can be religious if they involve ultimate commitment (nationalism, communism, etc.)"
+        ],
+        "on_premise": "A premise is religious if it deals with ultimate questions - not preliminary concerns like science or politics, but the final questions of existence, meaning, and value.",
+        "on_contradiction": "Contradictions often arise when we confuse the finite with the infinite, or when ultimate concerns compete. True religion transcends these apparent contradictions.",
+        "on_logic": "Religious logic is not the same as scientific logic. Religious truth is existential - it grasps us with ultimate concern rather than being grasped by our rational faculties.",
+        "on_fallacy": "The greatest fallacy is literalism - treating religious symbols as if they were scientific descriptions. Religious language is symbolic, pointing beyond itself to ultimate reality.",
+        "on_absurdity": "What seems absurd to scientific reason may reveal profound existential truth. The 'absurd' often points to the limits of finite reason when confronting the infinite.",
+        "personality": "deeply philosophical, concerned with meaning and existence, bridges academic and pastoral concerns, speaks to modern anxiety and alienation"
+    }
+}
 
 # Quiz questions with detailed explanations
 QUIZ_DATA = {
@@ -374,6 +446,30 @@ QUIZ_DATA = {
     }
 }
 
+# Assignment 1: Five Required Question Types
+ARGUMENT_STRUCTURE_CONCEPTS = {
+    "premise": {
+        "definition": "The basic building blocks of arguments - the foundational claims or assumptions from which conclusions are drawn",
+        "example": "Premise 1: All humans are mortal. Premise 2: Socrates is human. Conclusion: Therefore, Socrates is mortal."
+    },
+    "contradiction": {
+        "definition": "Two or more claims that cannot all be true at the same time; they are logically incompatible",
+        "example": "It cannot be both true that 'God knows everything that will happen' AND 'humans have free will to choose differently.'"
+    },
+    "logic": {
+        "definition": "The study of valid reasoning; includes deductive logic (general to specific) and inductive logic (specific to general patterns)",
+        "example": "Deductive: All religions involve ritual (general) → Buddhism involves ritual (specific). Inductive: This church, that mosque, and this temple all bring people together → Religion brings people together (pattern)."
+    },
+    "fallacy": {
+        "definition": "Common errors in reasoning that make arguments invalid or weak, such as straw man, ad hominem, or false cause",
+        "example": "Ad hominem fallacy: 'You can't trust Durkheim's theory about religion because he wasn't religious himself.'"
+    },
+    "absurdity": {
+        "definition": "Reductio ad absurdum - a logical technique that shows a position must be false because it leads to absurd or contradictory conclusions",
+        "example": "If Tylor's definition is right and religion requires belief in spiritual beings, then Buddhism isn't a religion - but that seems absurd since Buddhism is clearly religious."
+    }
+}
+
 # Enhanced resources with current, engaging content
 RESOURCES = {
     "videos": [
@@ -400,12 +496,6 @@ RESOURCES = {
             "url": "https://www.youtube.com/watch?v=1RWOpQXTltA",
             "description": "Beautiful animated version of Plato's famous allegory",
             "duration": "7 minutes"
-        },
-        {
-            "title": "What is Wisdom? - BBC Ideas", 
-            "url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-            "description": "Exploring different concepts of wisdom across cultures",
-            "duration": "6 minutes"
         }
     ],
     "articles": [
@@ -418,26 +508,570 @@ RESOURCES = {
             "title": "Internet Encyclopedia: Defining Religion",
             "url": "https://iep.utm.edu/religion/",
             "description": "Accessible discussion of different approaches to defining religion"
-        },
-        {
-            "title": "What Is It Like to Be Religious? - The Atlantic",
-            "url": "https://www.theatlantic.com/politics/archive/2017/08/what-is-it-like-to-be-religious/537579/",
-            "description": "Personal perspectives on religious experience"
-        }
-    ],
-    "interactive": [
-        {
-            "title": "Philosophy Slam - Interactive Game",
-            "url": "https://philosophyslam.org/",
-            "description": "Fun way to explore philosophical questions through games"
-        },
-        {
-            "title": "Religion News Service",
-            "url": "https://religionnews.com/",
-            "description": "Current news and analysis about religion worldwide"
         }
     ]
 }
+
+def get_philosopher_response(philosopher_name: str, question: str, question_type: str, openai_api_key: str = None) -> str:
+    """Generate a response from the specified philosopher based on their profile and the question type"""
+    
+    if not openai_api_key and not HAS_OPENAI:
+        return f"""
+        **{philosopher_name} responds** *(Note: This is a simulated response - connect your OpenAI API key for dynamic conversations)*:
+        
+        Based on my understanding of {question_type}, I would say that your question touches on fundamental issues about how we understand religious phenomena. Each of us - Durkheim, Tylor, and Tillich - approaches these questions from our unique perspectives shaped by our historical contexts and intellectual frameworks.
+        
+        Please provide your OpenAI API key in the sidebar to have dynamic conversations with us!
+        """
+    
+    if not openai_api_key:
+        # Return a static response based on the philosopher and question type
+        profile = PHILOSOPHER_PROFILES[philosopher_name]
+        concept_info = ARGUMENT_STRUCTURE_CONCEPTS.get(question_type, {})
+        
+        response_templates = {
+            "premise": f"As {profile['name']}, I believe that any premise about religion must {profile.get('on_premise', 'be carefully considered')}",
+            "contradiction": f"Regarding contradictions, I {profile['name']} would say: {profile.get('on_contradiction', 'they reveal important tensions in human thought')}",
+            "logic": f"When it comes to logic, I {profile['name']} argue that {profile.get('on_logic', 'we must use systematic reasoning')}",
+            "fallacy": f"About fallacies, I {profile['name']} warn that {profile.get('on_fallacy', 'we must avoid common errors in reasoning')}",
+            "absurdity": f"Concerning what seems absurd, I {profile['name']} believe {profile.get('on_absurdity', 'we must look deeper for underlying truth')}"
+        }
+        
+        return response_templates.get(question_type, f"I {profile['name']} find your question about {question_type} quite thought-provoking...")
+    
+    # Use OpenAI API for dynamic responses
+    try:
+        openai.api_key = openai_api_key
+        profile = PHILOSOPHER_PROFILES[philosopher_name]
+        concept = ARGUMENT_STRUCTURE_CONCEPTS.get(question_type, {})
+        
+        system_prompt = f"""
+        You are {profile['name']} ({profile['years']}), responding to a philosophy student's question.
+        
+        Your background: {profile['background']}
+        
+        Your key ideas: {', '.join(profile['key_ideas'])}
+        
+        Your personality: {profile['personality']}
+        
+        The student is asking about '{question_type}' which is defined as: {concept.get('definition', 'a concept in argument structure')}
+        
+        Respond in character as {profile['name']}, drawing on your specific view of religion and your approach to {question_type}. Be educational but maintain your historical perspective and personality. Keep your response to 2-3 paragraphs and address their specific question about {question_type}.
+        """
+        
+        user_message = f"Professor {profile['name']}, I'm studying argument structure and have a question about {question_type}: {question}"
+        
+        response = openai.ChatCompletion.create(
+            model="gpt-4",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_message}
+            ],
+            max_tokens=300,
+            temperature=0.7
+        )
+        
+        return response.choices[0].message.content
+        
+    except Exception as e:
+        return f"Error generating response: {str(e)}. Please check your API key."
+
+def display_professor_lecture():
+    """Display the beautiful HTML presentation"""
+    st.markdown("# 🎓 Professor Lecture - Interactive Presentation")
+    st.markdown("*Click the presentation below to begin the interactive lecture*")
+    
+    # Embed the HTML presentation
+    html_content = """
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>What is Religion? What is Philosophy?</title>
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            body {
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: #333;
+                overflow: hidden;
+            }
+
+            .presentation-container {
+                width: 100vw;
+                height: 100vh;
+                position: relative;
+            }
+
+            .slide {
+                width: 100%;
+                height: 100%;
+                display: none;
+                padding: 60px;
+                background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+                position: relative;
+                overflow-y: auto;
+            }
+
+            .slide.active {
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+            }
+
+            .slide-number {
+                position: absolute;
+                top: 20px;
+                right: 30px;
+                background: rgba(102, 126, 234, 0.8);
+                color: white;
+                padding: 8px 16px;
+                border-radius: 20px;
+                font-size: 14px;
+                font-weight: bold;
+            }
+
+            h1 {
+                font-size: 3.5em;
+                color: #2c3e50;
+                text-align: center;
+                margin-bottom: 30px;
+                text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+                animation: fadeInUp 1s ease-out;
+            }
+
+            h2 {
+                font-size: 2.8em;
+                color: #34495e;
+                text-align: center;
+                margin-bottom: 40px;
+                animation: fadeInUp 1s ease-out 0.2s both;
+            }
+
+            h3 {
+                font-size: 2em;
+                color: #2980b9;
+                margin-bottom: 25px;
+                text-align: center;
+                animation: fadeInUp 1s ease-out 0.4s both;
+            }
+
+            .subtitle {
+                font-size: 1.3em;
+                color: #7f8c8d;
+                text-align: center;
+                margin-bottom: 50px;
+                font-style: italic;
+                animation: fadeInUp 1s ease-out 0.3s both;
+            }
+
+            .course-info {
+                background: rgba(255, 255, 255, 0.9);
+                padding: 30px;
+                border-radius: 15px;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+                text-align: center;
+                margin-bottom: 40px;
+                animation: slideInUp 1s ease-out 0.5s both;
+            }
+
+            .content-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                gap: 30px;
+                width: 100%;
+                max-width: 1200px;
+                margin: 0 auto;
+            }
+
+            .content-card {
+                background: rgba(255, 255, 255, 0.95);
+                padding: 30px;
+                border-radius: 15px;
+                box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+                transform: translateY(20px);
+                opacity: 0;
+                animation: slideInUp 0.8s ease-out forwards;
+                transition: transform 0.3s ease, box-shadow 0.3s ease;
+            }
+
+            .content-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+            }
+
+            .content-card:nth-child(1) { animation-delay: 0.1s; }
+            .content-card:nth-child(2) { animation-delay: 0.3s; }
+            .content-card:nth-child(3) { animation-delay: 0.5s; }
+
+            .navigation {
+                position: fixed;
+                bottom: 30px;
+                left: 50%;
+                transform: translateX(-50%);
+                display: flex;
+                gap: 15px;
+                z-index: 1000;
+            }
+
+            .nav-btn {
+                background: rgba(102, 126, 234, 0.9);
+                color: white;
+                border: none;
+                padding: 12px 24px;
+                border-radius: 25px;
+                cursor: pointer;
+                font-weight: bold;
+                transition: all 0.3s ease;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            }
+
+            .nav-btn:hover {
+                background: rgba(102, 126, 234, 1);
+                transform: translateY(-2px);
+                box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+            }
+
+            @keyframes fadeInUp {
+                from {
+                    opacity: 0;
+                    transform: translateY(30px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            @keyframes slideInUp {
+                from {
+                    opacity: 0;
+                    transform: translateY(50px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="presentation-container">
+            <!-- Slide 1: Title -->
+            <div class="slide active">
+                <div class="slide-number">1 / 9</div>
+                <h1>📚 What is Religion?<br>What is Philosophy?</h1>
+                <div class="course-info">
+                    <h3>PHL 101 — Comparative Religions I</h3>
+                    <p class="subtitle">Professor Xavier Honablue, M.Ed.</p>
+                    <p><strong>Background: Mathematics • Computer Science • Philosophy • Education</strong></p>
+                </div>
+                <div class="subtitle">
+                    "We're going to explore the great traditions of the world — Judaism, Christianity, Islam, 
+                    but also Eastern, African, and Indigenous traditions. Our job is not to judge, 
+                    but to think critically, compare, and engage."
+                </div>
+            </div>
+
+            <!-- Additional slides would continue here -->
+            <div class="slide">
+                <div class="slide-number">2 / 9</div>
+                <h2>Our Journey Together</h2>
+                <div class="content-card">
+                    <h3>What We'll Explore:</h3>
+                    <ul style="text-align: left; margin: 20px 0;">
+                        <li><strong>World Religions:</strong> Christianity, Islam, Judaism, Hinduism, Buddhism, Taoism</li>
+                        <li><strong>Indigenous Traditions:</strong> Native American, African, Australian Aboriginal</li>
+                        <li><strong>Philosophical Approaches:</strong> Western and Eastern philosophical traditions</li>
+                        <li><strong>Critical Thinking:</strong> Comparing beliefs, practices, and worldviews</li>
+                        <li><strong>Personal Reflection:</strong> Understanding your own beliefs and assumptions</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="navigation">
+            <button class="nav-btn" onclick="previousSlide()" id="prevBtn">← Previous</button>
+            <button class="nav-btn" onclick="nextSlide()" id="nextBtn">Next →</button>
+        </div>
+
+        <script>
+            let currentSlide = 0;
+            const slides = document.querySelectorAll('.slide');
+            const totalSlides = slides.length;
+
+            function showSlide(n) {
+                slides[currentSlide].classList.remove('active');
+                currentSlide = (n + totalSlides) % totalSlides;
+                slides[currentSlide].classList.add('active');
+                
+                document.getElementById('prevBtn').disabled = currentSlide === 0;
+                document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+            }
+
+            function nextSlide() {
+                if (currentSlide < totalSlides - 1) {
+                    showSlide(currentSlide + 1);
+                }
+            }
+
+            function previousSlide() {
+                if (currentSlide > 0) {
+                    showSlide(currentSlide - 1);
+                }
+            }
+
+            // Keyboard navigation
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'ArrowRight' || e.key === ' ') {
+                    nextSlide();
+                } else if (e.key === 'ArrowLeft') {
+                    previousSlide();
+                }
+            });
+
+            // Initialize
+            showSlide(0);
+        </script>
+    </body>
+    </html>
+    """
+    
+    # Display the HTML in a component
+    st.components.v1.html(html_content, height=600, scrolling=True)
+    
+    st.markdown("---")
+    st.markdown("**Navigation Instructions:**")
+    st.markdown("- Use arrow keys or click Previous/Next buttons")
+    st.markdown("- Press 'F' for fullscreen mode")
+    st.markdown("- Press 'N' to toggle presenter notes")
+
+def display_assignment1():
+    """Display Assignment 1: Philosopher Conversations"""
+    st.markdown("# 📝 Assignment 1: Philosopher Conversations")
+    st.markdown("## Explore Argument Structure Through Dialog")
+    
+    # Instructions
+    with st.expander("📋 Assignment Instructions", expanded=True):
+        st.markdown("""
+        ### Your Mission:
+        You will have conversations with three philosophers about **argument structure concepts**:
+        
+        **The Five Required Question Types:**
+        1. **Premise** - Basic building blocks of arguments
+        2. **Contradiction** - Claims that cannot both be true
+        3. **Logic** - Valid reasoning (deductive/inductive)
+        4. **Fallacy** - Common errors in reasoning
+        5. **Absurdity** - Reductio ad absurdum technique
+        
+        ### Requirements:
+        - Ask **each philosopher** at least **one question** about **each concept** (5 questions per philosopher minimum)
+        - Take **notes** on their responses
+        - Write a **150-200 word essay** about what you learned from each philosopher
+        
+        ### The Philosophers:
+        - **Émile Durkheim** (1858-1917): Religion as social glue
+        - **Edward Tylor** (1832-1917): Religion as belief in spiritual beings  
+        - **Paul Tillich** (1886-1965): Religion as ultimate concern
+        """)
+    
+    # API Key input
+    st.sidebar.markdown("### 🔑 OpenAI Configuration")
+    openai_key = st.sidebar.text_input("OpenAI API Key", type="password", help="Enter your OpenAI API key for dynamic conversations")
+    
+    if not openai_key:
+        st.info("💡 **Tip:** Add your OpenAI API key in the sidebar for dynamic philosopher conversations!")
+    
+    # Progress tracking
+    st.markdown("## 📊 Your Progress")
+    
+    progress_data = st.session_state.assignment1_progress
+    
+    # Progress visualization
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        durkheim_questions = len(progress_data['questions_asked']['Durkheim'])
+        st.metric("Durkheim Questions", f"{durkheim_questions}/5")
+        if durkheim_questions >= 5:
+            st.success("✅ Complete")
+    
+    with col2:
+        tylor_questions = len(progress_data['questions_asked']['Tylor'])
+        st.metric("Tylor Questions", f"{tylor_questions}/5")
+        if tylor_questions >= 5:
+            st.success("✅ Complete")
+    
+    with col3:
+        tillich_questions = len(progress_data['questions_asked']['Tillich'])
+        st.metric("Tillich Questions", f"{tillich_questions}/5")
+        if tillich_questions >= 5:
+            st.success("✅ Complete")
+    
+    # Philosopher selection
+    st.markdown("## 💬 Choose Your Conversation Partner")
+    
+    philosopher = st.selectbox(
+        "Select a philosopher to talk with:",
+        ["Durkheim", "Tylor", "Tillich"],
+        format_func=lambda x: f"{PHILOSOPHER_PROFILES[x]['name']} ({PHILOSOPHER_PROFILES[x]['years']})"
+    )
+    
+    # Display philosopher info
+    profile = PHILOSOPHER_PROFILES[philosopher]
+    with st.expander(f"📚 About {profile['name']}", expanded=False):
+        st.markdown(f"**Years:** {profile['years']}")
+        st.markdown(f"**Background:** {profile['background']}")
+        st.markdown("**Key Ideas:**")
+        for idea in profile['key_ideas']:
+            st.markdown(f"- {idea}")
+    
+    # Question type and input
+    st.markdown(f"## 🗣️ Conversation with {profile['name']}")
+    
+    question_type = st.selectbox(
+        "What concept do you want to ask about?",
+        ["premise", "contradiction", "logic", "fallacy", "absurdity"],
+        format_func=lambda x: f"{x.title()} - {ARGUMENT_STRUCTURE_CONCEPTS[x]['definition'][:50]}..."
+    )
+    
+    # Show concept definition
+    concept = ARGUMENT_STRUCTURE_CONCEPTS[question_type]
+    st.info(f"**{question_type.title()}:** {concept['definition']}")
+    st.markdown(f"**Example:** {concept['example']}")
+    
+    # Question input
+    user_question = st.text_area(
+        f"Ask {profile['name']} about {question_type}:",
+        placeholder=f"Example: How do you think about {question_type} when studying religion?",
+        key=f"question_{philosopher}_{question_type}"
+    )
+    
+    # Ask question button
+    if st.button(f"Ask {profile['name']}", key=f"ask_{philosopher}_{question_type}"):
+        if user_question.strip():
+            # Generate response
+            with st.spinner(f"💭 {profile['name']} is thinking..."):
+                response = get_philosopher_response(philosopher, user_question, question_type, openai_key)
+            
+            # Display response
+            st.markdown(f"### 🎭 {profile['name']} responds:")
+            st.markdown(response)
+            
+            # Save to progress
+            progress_data['questions_asked'][philosopher].append({
+                'type': question_type,
+                'question': user_question,
+                'timestamp': datetime.now().isoformat()
+            })
+            
+            progress_data['responses_received'][philosopher].append({
+                'type': question_type,
+                'question': user_question,
+                'response': response,
+                'timestamp': datetime.now().isoformat()
+            })
+            
+            st.success("Question and response saved to your progress!")
+        else:
+            st.warning("Please enter a question first!")
+    
+    # Notes section
+    st.markdown(f"## 📝 Your Notes on {profile['name']}")
+    
+    notes_key = f"notes_{philosopher}"
+    current_notes = st.text_area(
+        f"Take notes on {profile['name']}'s responses:",
+        value=progress_data['notes'][philosopher],
+        height=150,
+        key=notes_key,
+        placeholder="What insights did you gain? How does their perspective on argument structure relate to their view of religion?"
+    )
+    
+    if st.button(f"Save Notes for {profile['name']}", key=f"save_notes_{philosopher}"):
+        progress_data['notes'][philosopher] = current_notes
+        st.success("Notes saved!")
+    
+    # Essay section
+    if len(progress_data['questions_asked'][philosopher]) >= 5:
+        st.markdown(f"## ✍️ Essay about {profile['name']}")
+        st.success(f"You've asked {profile['name']} all 5 required questions! Now write your essay.")
+        
+        essay_key = f"essay_{philosopher}"
+        current_essay = st.text_area(
+            f"Write 150-200 words about what you learned from {profile['name']} regarding argument structure:",
+            value=progress_data['essays'][philosopher],
+            height=200,
+            key=essay_key,
+            placeholder=f"Based on your conversations with {profile['name']}, what did you learn about how they approach premises, contradictions, logic, fallacies, and absurdity? How does their perspective on argument structure connect to their definition of religion?"
+        )
+        
+        # Word count
+        word_count = len(current_essay.split()) if current_essay else 0
+        
+        if word_count < 150:
+            st.warning(f"Word count: {word_count}/150 (minimum) - Need {150-word_count} more words")
+        elif word_count > 200:
+            st.warning(f"Word count: {word_count}/200 (maximum) - Remove {word_count-200} words")
+        else:
+            st.success(f"Word count: {word_count} - Perfect length!")
+        
+        if st.button(f"Submit Essay for {profile['name']}", key=f"submit_essay_{philosopher}"):
+            if 150 <= word_count <= 200:
+                progress_data['essays'][philosopher] = current_essay
+                progress_data['completed_philosophers'].add(philosopher)
+                st.balloons()
+                st.success(f"Essay submitted successfully for {profile['name']}!")
+            else:
+                st.error("Essay must be between 150-200 words.")
+    
+    # Overall progress
+    st.markdown("## 🎯 Overall Assignment Progress")
+    
+    total_questions = sum(len(questions) for questions in progress_data['questions_asked'].values())
+    total_essays = len(progress_data['completed_philosophers'])
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        st.metric("Total Questions Asked", f"{total_questions}/15")
+    with col2:
+        st.metric("Essays Completed", f"{total_essays}/3")
+    
+    # Check completion
+    if total_questions >= 15 and total_essays >= 3:
+        st.balloons()
+        st.success("🎉 **Assignment 1 Complete!** You've successfully completed all conversations and essays.")
+        
+        # Export option
+        if st.button("📄 Export Assignment 1 Results"):
+            export_data = {
+                'assignment': 'Assignment 1: Philosopher Conversations',
+                'completion_date': datetime.now().isoformat(),
+                'questions_and_responses': progress_data['responses_received'],
+                'notes': progress_data['notes'],
+                'essays': progress_data['essays'],
+                'statistics': {
+                    'total_questions': total_questions,
+                    'total_essays': total_essays,
+                    'completed_philosophers': list(progress_data['completed_philosophers'])
+                }
+            }
+            
+            json_str = json.dumps(export_data, indent=2)
+            st.download_button(
+                "Download Assignment Results",
+                json_str,
+                file_name=f"assignment1_results_{datetime.now().strftime('%Y%m%d')}.json",
+                mime="application/json"
+            )
 
 def display_slide(slide_data: dict) -> None:
     """Display a slide with enhanced formatting"""
@@ -462,7 +1096,7 @@ def display_slide(slide_data: dict) -> None:
                 )
                 if response:
                     st.session_state.student_responses[response_key] = response
-                    st.success("Response saved! 📝")
+                    st.success("Response saved!")
     
     with col2:
         # Timer display
@@ -478,7 +1112,7 @@ def display_slide(slide_data: dict) -> None:
                 </div>
                 """, unsafe_allow_html=True)
                 time.sleep(1)
-                st.experimental_rerun()
+                st.rerun()
             else:
                 st.balloons()
                 st.success("⏰ Time's up!")
@@ -490,7 +1124,7 @@ def start_timer(minutes: int) -> None:
     st.session_state.timer_end = time.time() + (minutes * 60)
 
 def display_quiz(quiz_id: str) -> None:
-    """Display interactive quiz with LLM feedback"""
+    """Display interactive quiz"""
     if quiz_id not in QUIZ_DATA:
         st.error("Quiz not found!")
         return
@@ -515,7 +1149,7 @@ def display_quiz(quiz_id: str) -> None:
             if answer:
                 answers[i] = q["options"].index(answer)
         
-        submitted = st.form_submit_button("Submit Quiz 🎯")
+        submitted = st.form_submit_button("Submit Quiz")
         
         if submitted and len(answers) == len(quiz["questions"]):
             st.session_state.quiz_attempts[quiz_id] += 1
@@ -546,15 +1180,11 @@ def display_quiz(quiz_id: str) -> None:
             
             if score_pct >= 80:
                 st.balloons()
-                st.success(f"🎉 Excellent work! Score: {correct_count}/{total_questions} ({score_pct:.0f}%)")
+                st.success(f"Excellent work! Score: {correct_count}/{total_questions} ({score_pct:.0f}%)")
             elif score_pct >= 60:
-                st.success(f"👍 Good job! Score: {correct_count}/{total_questions} ({score_pct:.0f}%)")
+                st.success(f"Good job! Score: {correct_count}/{total_questions} ({score_pct:.0f}%)")
             else:
-                st.warning(f"📚 Keep studying! Score: {correct_count}/{total_questions} ({score_pct:.0f}%)")
-            
-            # Personalized feedback
-            if score_pct < 60:
-                st.info("💡 **Tip:** Review the slide content and try the quiz again. Focus on understanding the key differences between Durkheim, Tylor, and Tillich's definitions.")
+                st.warning(f"Keep studying! Score: {correct_count}/{total_questions} ({score_pct:.0f}%)")
 
 def display_resources() -> None:
     """Display enhanced resources page"""
@@ -562,61 +1192,34 @@ def display_resources() -> None:
     st.markdown("Explore these carefully selected resources to deepen your understanding!")
     
     # Videos section
-    st.markdown("## 🎥 Videos")
+    st.markdown("## Videos")
     col1, col2 = st.columns(2)
     
     for i, video in enumerate(RESOURCES["videos"]):
         with col1 if i % 2 == 0 else col2:
-            st.markdown(f"""
-            <div style="border: 1px solid #ddd; padding: 15px; border-radius: 10px; margin-bottom: 15px;">
-                <h4>📺 {video['title']}</h4>
-                <p>{video['description']}</p>
-                <p><strong>Duration:</strong> {video['duration']}</p>
-                <a href="{video['url']}" target="_blank" style="text-decoration: none;">
-                    <button style="background: #ff4b4b; color: white; padding: 8px 16px; border: none; border-radius: 5px; cursor: pointer;">
-                        ▶️ Watch Now
-                    </button>
-                </a>
-            </div>
-            """, unsafe_allow_html=True)
+            st.markdown(f"### {video['title']}")
+            st.markdown(f"{video['description']}")
+            st.markdown(f"**Duration:** {video['duration']}")
+            st.markdown(f"[Watch Now]({video['url']})")
+            st.markdown("---")
     
     # Articles section
-    st.markdown("## 📖 Articles & Readings")
+    st.markdown("## Articles & Readings")
     for article in RESOURCES["articles"]:
-        st.markdown(f"""
-        - **[{article['title']}]({article['url']})** - {article['description']}
-        """)
-    
-    # Interactive section
-    st.markdown("## 🎮 Interactive Resources")
-    for resource in RESOURCES["interactive"]:
-        st.markdown(f"""
-        - **[{resource['title']}]({resource['url']})** - {resource['description']}
-        """)
-    
-    # Study tips
-    st.markdown("## 💡 Study Tips")
-    st.info("""
-    **How to get the most from these resources:**
-    1. **Watch actively** - Take notes on key concepts
-    2. **Ask questions** - What confuses you? What interests you most?
-    3. **Connect ideas** - How do these resources relate to our class discussions?
-    4. **Discuss** - Share interesting points with classmates
-    5. **Apply** - Try using these concepts to analyze religions you're familiar with
-    """)
+        st.markdown(f"- **[{article['title']}]({article['url']})** - {article['description']}")
 
-def sidebar_navigation() -> None:
+def sidebar_navigation() -> str:
     """Enhanced sidebar with navigation and controls"""
     st.sidebar.markdown("# 📚 PHL 101 Day 1")
     
     # Mode selection
     mode = st.sidebar.radio(
         "Choose Mode:",
-        ["📊 Presentation", "📝 Student Activities", "📚 Resources", "👨‍🎓 Study Guide"]
+        ["📊 Presentation", "🎓 Professor Lecture", "📝 Assignment 1", "🧠 Quizzes", "📚 Resources"]
     )
     
     if mode == "📊 Presentation":
-        st.sidebar.markdown("## 🎯 Slide Navigation")
+        st.sidebar.markdown("## Slide Navigation")
         
         # Slide selector
         slide_titles = [f"{i+1}. {slide['title']}" for i, slide in enumerate(SLIDES)]
@@ -629,19 +1232,18 @@ def sidebar_navigation() -> None:
         
         if selected_slide != st.session_state.current_slide:
             st.session_state.current_slide = selected_slide
-            st.experimental_rerun()
         
         # Navigation buttons
         col1, col2 = st.sidebar.columns(2)
         with col1:
             if st.button("⬅️ Previous") and st.session_state.current_slide > 0:
                 st.session_state.current_slide -= 1
-                st.experimental_rerun()
+                st.rerun()
         
         with col2:
             if st.button("Next ➡️") and st.session_state.current_slide < len(SLIDES) - 1:
                 st.session_state.current_slide += 1
-                st.experimental_rerun()
+                st.rerun()
         
         # Timer controls
         current_slide = SLIDES[st.session_state.current_slide]
@@ -650,7 +1252,7 @@ def sidebar_navigation() -> None:
             st.sidebar.markdown("⏰ **Activity Timer**")
             if st.sidebar.button(f"Start {current_slide['timer_minutes']} min timer"):
                 start_timer(current_slide["timer_minutes"])
-                st.experimental_rerun()
+                st.rerun()
         
         # Presenter notes
         st.sidebar.markdown("---")
@@ -658,224 +1260,7 @@ def sidebar_navigation() -> None:
             st.sidebar.markdown("**Notes:**")
             st.sidebar.info(current_slide.get("presenter_notes", "No notes for this slide."))
             
-    elif mode == "📝 Student Activities":
-        # Add export functionality for student mode
-        st.sidebar.markdown("---")
-        if st.sidebar.button("💾 Export My Work"):
-            json_str = export_student_work()
-            st.sidebar.download_button(
-                "📄 Download Progress",
-                json_str,
-                file_name=f"phl101_day1_progress_{datetime.now().strftime('%Y%m%d')}.json",
-                mime="application/json"
-            )
-        return "student_activities"
-    elif mode == "📚 Resources":
-        return "resources"
-    elif mode == "👨‍🎓 Study Guide":
-        return "study_guide"
-    
-    return "presentation"
-
-def display_study_guide() -> None:
-    """Display comprehensive study guide"""
-    st.markdown("# 👨‍🎓 Study Guide")
-    
-    tab1, tab2, tab3 = st.tabs(["📝 Key Concepts", "🔍 Practice Questions", "📊 Progress Tracker"])
-    
-    with tab1:
-        st.markdown("## 🎯 Key Concepts to Master")
-        
-        st.markdown("### 📖 Philosophy Definition")
-        st.markdown("""
-        - **Etymology:** Philo (love) + Sophia (wisdom) = Love of wisdom
-        - **Practice:** Active pursuit through questioning, reasoning, logic
-        - **Methods:** Rational inquiry rather than tradition/revelation alone
-        """)
-        
-        st.markdown("### 🕊️ Three Definitions of Religion")
-        
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            st.markdown("""
-            **Durkheim (Social)**
-            - Religion as social glue
-            - Creates solidarity
-            - Shared rituals unite communities
-            - Example: Holiday gatherings
-            """)
-        
-        with col2:
-            st.markdown("""
-            **Tylor (Spiritual)**
-            - Belief in spiritual beings
-            - Gods, spirits, supernatural
-            - Focus on metaphysical realm
-            - Example: Prayer to deities
-            """)
-        
-        with col3:
-            st.markdown("""
-            **Tillich (Ultimate Concern)**
-            - What matters most deeply
-            - Willing to sacrifice for
-            - Can include secular devotions
-            - Example: Environmental activism
-            """)
-    
-    with tab2:
-        st.markdown("## 🤔 Practice Questions")
-        
-        practice_questions = [
-            "How would you explain the difference between philosophy and religion to a friend?",
-            "Which definition of religion (Durkheim, Tylor, or Tillich) best explains modern sports fandom?",
-            "Is Buddhism a religion according to each definition? Why or why not?",
-            "What are examples of 'ultimate concerns' in contemporary society?",
-            "How do Plato's Cave and the Exodus story both represent the human search for truth?"
-        ]
-        
-        for i, question in enumerate(practice_questions, 1):
-            with st.expander(f"Question {i}: {question}"):
-                answer = st.text_area(f"Your answer:", key=f"practice_q_{i}")
-                if answer:
-                    st.success("Answer recorded! Discuss with classmates or bring to office hours.")
-    
-    with tab3:
-        st.markdown("## 📊 Your Progress")
-        
-        # Quiz progress
-        completed_quizzes = len(st.session_state.quiz_attempts)
-        total_quizzes = len(QUIZ_DATA)
-        
-        progress_pct = (completed_quizzes / total_quizzes) * 100 if total_quizzes > 0 else 0
-        st.progress(progress_pct / 100)
-        st.markdown(f"**Quizzes completed:** {completed_quizzes}/{total_quizzes}")
-        
-        # Response tracking
-        total_responses = len(st.session_state.student_responses)
-        st.markdown(f"**Discussion responses:** {total_responses}")
-        
-        # Study recommendations
-        if progress_pct < 50:
-            st.info("🎯 **Recommendation:** Complete the quizzes to test your understanding!")
-        elif progress_pct < 100:
-            st.info("🎯 **Recommendation:** Review any quiz questions you missed and check out the resources page!")
-        else:
-            st.success("🎉 **Great work!** You've engaged with all the materials. Ready for Day 2!")
-
-def display_student_activities() -> None:
-    """Display student-focused activities and assessments"""
-    st.markdown("# 📝 Student Activities")
-    
-    activity_tab = st.selectbox(
-        "Choose an activity:",
-        ["Quick Check Quizzes", "Reflection Exercises", "Discussion Responses", "Self-Assessment"]
-    )
-    
-    if activity_tab == "Quick Check Quizzes":
-        st.markdown("## 🧠 Test Your Understanding")
-        
-        quiz_choice = st.selectbox(
-            "Select a quiz:",
-            ["definitions_quiz", "philosophy_basics"],
-            format_func=lambda x: QUIZ_DATA[x]["title"]
-        )
-        
-        display_quiz(quiz_choice)
-    
-    elif activity_tab == "Reflection Exercises":
-        st.markdown("## 💭 Personal Reflection")
-        
-        st.markdown("### Exercise 1: Your Definition of Religion")
-        religion_def = st.text_area(
-            "Based on what we've learned, how would YOU define religion? (1-2 paragraphs)",
-            key="personal_religion_def",
-            placeholder="Consider the three scholarly definitions we discussed. Which resonates with you? Why? Can you think of a better way to define religion?"
-        )
-        
-        st.markdown("### Exercise 2: Philosophy in Your Life")
-        philosophy_life = st.text_area(
-            "How do you see philosophy ('love of wisdom') playing a role in your daily life?",
-            key="philosophy_in_life",
-            placeholder="Think about times when you question assumptions, think critically about issues, or seek deeper understanding..."
-        )
-        
-        st.markdown("### Exercise 3: Your Big Question")
-        big_question = st.text_area(
-            "What's one philosophical or religious question you hope this course will help you explore?",
-            key="big_question",
-            placeholder="What keeps you up at night wondering? What would you really like to understand better about life, meaning, or existence?"
-        )
-        
-        if st.button("Save Reflections"):
-            reflections = {
-                "religion_definition": religion_def,
-                "philosophy_in_life": philosophy_life,
-                "big_question": big_question,
-                "timestamp": datetime.now().isoformat()
-            }
-            st.session_state.student_responses.update(reflections)
-            st.success("Reflections saved! You can return to these throughout the semester.")
-    
-    elif activity_tab == "Discussion Responses":
-        st.markdown("## 💬 Discussion Participation")
-        
-        # Show saved responses
-        if st.session_state.student_responses:
-            st.markdown("### Your Responses So Far:")
-            for key, response in st.session_state.student_responses.items():
-                if key.startswith("response_"):
-                    slide_id = key.replace("response_", "")
-                    slide_title = next((s["title"] for s in SLIDES if s["id"] == slide_id), "Unknown")
-                    with st.expander(f"Response to: {slide_title}"):
-                        st.write(response)
-        else:
-            st.info("No discussion responses yet. Navigate to the presentation slides to participate!")
-    
-    elif activity_tab == "Self-Assessment":
-        st.markdown("## 🎯 Self-Assessment Checklist")
-        
-        st.markdown("Rate your understanding of each concept (1-5 scale):")
-        
-        concepts = [
-            "Etymology and meaning of 'philosophy'",
-            "Durkheim's definition of religion (social glue)",
-            "Tylor's definition of religion (spiritual beings)",
-            "Tillich's definition of religion (ultimate concern)",
-            "How philosophy and religion overlap",
-            "Examples like Plato's Cave and Exodus",
-            "Ability to analyze whether something is a religion"
-        ]
-        
-        ratings = {}
-        for concept in concepts:
-            rating = st.slider(
-                concept,
-                min_value=1,
-                max_value=5,
-                value=3,
-                key=f"rating_{concept.replace(' ', '_').replace('(', '').replace(')', '')}"
-            )
-            ratings[concept] = rating
-        
-        if st.button("Calculate Assessment"):
-            avg_rating = sum(ratings.values()) / len(ratings)
-            
-            if avg_rating >= 4.5:
-                st.success("🌟 Excellent! You have a strong grasp of the material.")
-            elif avg_rating >= 4.0:
-                st.success("👍 Very good understanding! Keep up the great work.")
-            elif avg_rating >= 3.0:
-                st.warning("📚 Good foundation, but review areas where you rated 3 or below.")
-            else:
-                st.info("📖 Spend more time with the materials and consider visiting office hours for help.")
-            
-            # Specific recommendations
-            low_areas = [concept for concept, rating in ratings.items() if rating <= 2]
-            if low_areas:
-                st.markdown("**Areas to focus on:**")
-                for area in low_areas:
-                    st.markdown(f"- {area}")
+    return mode.split()[1].lower()  # Return just the key part
 
 def main():
     """Main application function"""
@@ -895,12 +1280,6 @@ def main():
     .stButton > button:hover {
         background: linear-gradient(45deg, #764ba2, #667eea);
     }
-    .quiz-container {
-        background: #f8f9fa;
-        padding: 20px;
-        border-radius: 10px;
-        border-left: 5px solid #667eea;
-    }
     </style>
     """, unsafe_allow_html=True)
     
@@ -917,45 +1296,25 @@ def main():
         st.progress(progress)
         st.caption(f"Slide {st.session_state.current_slide + 1} of {len(SLIDES)}")
     
-    elif current_mode == "student_activities":
-        display_student_activities()
+    elif current_mode == "professor":
+        display_professor_lecture()
+    
+    elif current_mode == "assignment":
+        display_assignment1()
+    
+    elif current_mode == "quizzes":
+        st.markdown("# 🧠 Knowledge Check Quizzes")
+        
+        quiz_choice = st.selectbox(
+            "Select a quiz:",
+            ["definitions_quiz", "philosophy_basics"],
+            format_func=lambda x: QUIZ_DATA[x]["title"]
+        )
+        
+        display_quiz(quiz_choice)
     
     elif current_mode == "resources":
         display_resources()
-    
-    elif current_mode == "study_guide":
-        display_study_guide()
 
-# Optional LLM integration for advanced features
-def get_llm_feedback(student_response: str, context: str) -> str:
-    """Generate LLM feedback on student responses (requires API key)"""
-    # This would integrate with OpenAI or other LLM APIs
-    # For now, return placeholder feedback
-    return f"Thank you for your thoughtful response about {context}. Your insights show good engagement with the material."
-
-# Initialize session state and run app
 if __name__ == "__main__":
     main()
-
-# Optional: Add export functionality for student work
-def export_student_work():
-    """Export student responses and quiz results"""
-    if st.sidebar.button("📄 Export My Work"):
-        work_summary = {
-            "student_responses": st.session_state.student_responses,
-            "quiz_attempts": st.session_state.quiz_attempts,
-            "timestamp": datetime.now().isoformat()
-        }
-        
-        # Convert to downloadable format
-        json_str = json.dumps(work_summary, indent=2)
-        st.sidebar.download_button(
-            "Download My Progress",
-            json_str,
-            file_name=f"phl101_day1_progress_{datetime.now().strftime('%Y%m%d')}.json",
-            mime="application/json"
-        )
-
-# Add this to sidebar in appropriate mode
-if st.sidebar.button("💾 Export My Work"):
-    export_student_work()
