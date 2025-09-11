@@ -470,7 +470,7 @@ ARGUMENT_STRUCTURE_CONCEPTS = {
     }
 }
 
-# Enhanced resources with current, engaging content
+# Enhanced resources with corrected URLs
 RESOURCES = {
     "videos": [
         {
@@ -481,21 +481,21 @@ RESOURCES = {
         },
         {
             "title": "What is Religion? - TED-Ed",
-            "url": "https://www.youtube.com/watch?v=xQq2V8C8XwQ", 
+            "url": "https://www.youtube.com/watch?v=kZY2eeozdo8",
             "description": "Animated exploration of different definitions of religion",
             "duration": "5 minutes"
-        },
-        {
-            "title": "Philosophy of Religion - Crash Course Philosophy #30",
-            "url": "https://www.youtube.com/watch?v=k6u3Qw4XlfQ",
-            "description": "Deep dive into how philosophy approaches religious questions",
-            "duration": "10 minutes"
         },
         {
             "title": "The Cave: An Adaptation of Plato's Allegory",
             "url": "https://www.youtube.com/watch?v=1RWOpQXTltA",
             "description": "Beautiful animated version of Plato's famous allegory",
             "duration": "7 minutes"
+        },
+        {
+            "title": "Introduction to Philosophy of Religion",
+            "url": "https://www.youtube.com/watch?v=QVPKiNjZLXM",
+            "description": "Academic introduction to major questions in philosophy of religion",
+            "duration": "12 minutes"
         }
     ],
     "articles": [
@@ -577,273 +577,911 @@ def get_philosopher_response(philosopher_name: str, question: str, question_type
         return f"Error generating response: {str(e)}. Please check your API key."
 
 def display_professor_lecture():
-    """Display the beautiful HTML presentation"""
+    """Display the complete beautiful HTML presentation"""
     st.markdown("# 🎓 Professor Lecture - Interactive Presentation")
     st.markdown("*Click the presentation below to begin the interactive lecture*")
     
-    # Embed the HTML presentation
-    html_content = """
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>What is Religion? What is Philosophy?</title>
-        <style>
-            * {
-                margin: 0;
-                padding: 0;
-                box-sizing: border-box;
-            }
+    # Complete HTML presentation from the document
+    html_content = """<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>What is Religion? What is Philosophy?</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-            body {
-                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                color: #333;
-                overflow: hidden;
-            }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            overflow: hidden;
+        }
 
-            .presentation-container {
-                width: 100vw;
-                height: 100vh;
-                position: relative;
-            }
+        .presentation-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
 
-            .slide {
-                width: 100%;
-                height: 100%;
-                display: none;
-                padding: 60px;
-                background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-                position: relative;
-                overflow-y: auto;
-            }
+        .slide {
+            width: 100%;
+            height: 100%;
+            display: none;
+            padding: 60px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            position: relative;
+            overflow-y: auto;
+        }
 
-            .slide.active {
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-                align-items: center;
-            }
+        .slide.active {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
 
-            .slide-number {
-                position: absolute;
-                top: 20px;
-                right: 30px;
-                background: rgba(102, 126, 234, 0.8);
-                color: white;
-                padding: 8px 16px;
-                border-radius: 20px;
-                font-size: 14px;
-                font-weight: bold;
-            }
+        .slide-number {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            background: rgba(102, 126, 234, 0.8);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+        }
 
-            h1 {
-                font-size: 3.5em;
-                color: #2c3e50;
-                text-align: center;
-                margin-bottom: 30px;
-                text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
-                animation: fadeInUp 1s ease-out;
-            }
+        h1 {
+            font-size: 3.5em;
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            animation: fadeInUp 1s ease-out;
+        }
 
-            h2 {
-                font-size: 2.8em;
-                color: #34495e;
-                text-align: center;
-                margin-bottom: 40px;
-                animation: fadeInUp 1s ease-out 0.2s both;
-            }
+        h2 {
+            font-size: 2.8em;
+            color: #34495e;
+            text-align: center;
+            margin-bottom: 40px;
+            animation: fadeInUp 1s ease-out 0.2s both;
+        }
 
-            h3 {
-                font-size: 2em;
-                color: #2980b9;
-                margin-bottom: 25px;
-                text-align: center;
-                animation: fadeInUp 1s ease-out 0.4s both;
-            }
+        h3 {
+            font-size: 2em;
+            color: #2980b9;
+            margin-bottom: 25px;
+            text-align: center;
+            animation: fadeInUp 1s ease-out 0.4s both;
+        }
 
-            .subtitle {
-                font-size: 1.3em;
-                color: #7f8c8d;
-                text-align: center;
-                margin-bottom: 50px;
-                font-style: italic;
-                animation: fadeInUp 1s ease-out 0.3s both;
-            }
+        .subtitle {
+            font-size: 1.3em;
+            color: #7f8c8d;
+            text-align: center;
+            margin-bottom: 50px;
+            font-style: italic;
+            animation: fadeInUp 1s ease-out 0.3s both;
+        }
 
-            .course-info {
-                background: rgba(255, 255, 255, 0.9);
-                padding: 30px;
-                border-radius: 15px;
-                box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-                text-align: center;
-                margin-bottom: 40px;
-                animation: slideInUp 1s ease-out 0.5s both;
-            }
+        .course-info {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            text-align: center;
+            margin-bottom: 40px;
+            animation: slideInUp 1s ease-out 0.5s both;
+        }
 
-            .content-grid {
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-                gap: 30px;
-                width: 100%;
-                max-width: 1200px;
-                margin: 0 auto;
-            }
+        .content-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
 
-            .content-card {
-                background: rgba(255, 255, 255, 0.95);
-                padding: 30px;
-                border-radius: 15px;
-                box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-                transform: translateY(20px);
+        .content-card {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            transform: translateY(20px);
+            opacity: 0;
+            animation: slideInUp 0.8s ease-out forwards;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .content-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+        }
+
+        .content-card:nth-child(1) { animation-delay: 0.1s; }
+        .content-card:nth-child(2) { animation-delay: 0.3s; }
+        .content-card:nth-child(3) { animation-delay: 0.5s; }
+
+        .icon {
+            font-size: 3em;
+            margin-bottom: 20px;
+            display: block;
+            text-align: center;
+        }
+
+        .philosophy-icon { color: #3498db; }
+        .religion-icon { color: #e74c3c; }
+        .overlap-icon { color: #9b59b6; }
+
+        .big-questions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            margin: 30px 0;
+        }
+
+        .question-tag {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            animation: fadeInScale 0.8s ease-out forwards;
+            transform: scale(0);
+        }
+
+        .question-tag:nth-child(1) { animation-delay: 0.1s; }
+        .question-tag:nth-child(2) { animation-delay: 0.2s; }
+        .question-tag:nth-child(3) { animation-delay: 0.3s; }
+        .question-tag:nth-child(4) { animation-delay: 0.4s; }
+        .question-tag:nth-child(5) { animation-delay: 0.5s; }
+
+        .definition-box {
+            background: linear-gradient(135deg, #ff9a56 0%, #ff6b6b 100%);
+            color: white;
+            padding: 25px;
+            margin: 15px 0;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            animation: slideInLeft 1s ease-out forwards;
+            transform: translateX(-50px);
+            opacity: 0;
+        }
+
+        .definition-box:nth-child(even) {
+            background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
+            animation: slideInRight 1s ease-out forwards;
+            transform: translateX(50px);
+        }
+
+        .definition-box:nth-child(1) { animation-delay: 0.2s; }
+        .definition-box:nth-child(2) { animation-delay: 0.4s; }
+        .definition-box:nth-child(3) { animation-delay: 0.6s; }
+
+        .example-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin: 40px 0;
+            width: 100%;
+            max-width: 1000px;
+        }
+
+        .example-card {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .philosophy-example {
+            border-left: 5px solid #3498db;
+        }
+
+        .religion-example {
+            border-left: 5px solid #e74c3c;
+        }
+
+        .navigation {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            z-index: 1000;
+        }
+
+        .nav-btn {
+            background: rgba(102, 126, 234, 0.9);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .nav-btn:hover {
+            background: rgba(102, 126, 234, 1);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        .nav-btn:disabled {
+            background: rgba(149, 165, 166, 0.5);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .slide-indicator {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 8px;
+            z-index: 1000;
+        }
+
+        .indicator-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .indicator-dot.active {
+            background: #667eea;
+            transform: scale(1.3);
+        }
+
+        .homework-section {
+            background: rgba(46, 204, 113, 0.1);
+            border-left: 5px solid #2ecc71;
+            padding: 30px;
+            border-radius: 10px;
+            margin-top: 30px;
+        }
+
+        .activity-timer {
+            position: fixed;
+            top: 20px;
+            left: 30px;
+            background: rgba(231, 76, 60, 0.9);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            display: none;
+        }
+
+        ul {
+            text-align: left;
+            margin: 20px 0;
+        }
+
+        li {
+            margin: 10px 0;
+            font-size: 1.1em;
+            line-height: 1.6;
+        }
+
+        .objective-list {
+            background: rgba(52, 152, 219, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 5px solid #3498db;
+        }
+
+        @keyframes fadeInUp {
+            from {
                 opacity: 0;
-                animation: slideInUp 0.8s ease-out forwards;
-                transition: transform 0.3s ease, box-shadow 0.3s ease;
+                transform: translateY(30px);
             }
-
-            .content-card:hover {
-                transform: translateY(-5px);
-                box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+            to {
+                opacity: 1;
+                transform: translateY(0);
             }
+        }
 
-            .content-card:nth-child(1) { animation-delay: 0.1s; }
-            .content-card:nth-child(2) { animation-delay: 0.3s; }
-            .content-card:nth-child(3) { animation-delay: 0.5s; }
-
-            .navigation {
-                position: fixed;
-                bottom: 30px;
-                left: 50%;
-                transform: translateX(-50%);
-                display: flex;
-                gap: 15px;
-                z-index: 1000;
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
             }
-
-            .nav-btn {
-                background: rgba(102, 126, 234, 0.9);
-                color: white;
-                border: none;
-                padding: 12px 24px;
-                border-radius: 25px;
-                cursor: pointer;
-                font-weight: bold;
-                transition: all 0.3s ease;
-                box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            to {
+                opacity: 1;
+                transform: translateY(0);
             }
+        }
 
-            .nav-btn:hover {
-                background: rgba(102, 126, 234, 1);
-                transform: translateY(-2px);
-                box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-50px);
             }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
 
-            @keyframes fadeInUp {
-                from {
-                    opacity: 0;
-                    transform: translateY(30px);
-                }
-                to {
-                    opacity: 1;
-                    transform: translateY(0);
-                }
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(50px);
             }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
 
-            @keyframes slideInUp {
-                from {
-                    opacity: 0;
-                    transform: translateY(50px);
-                }
-                to {
-                    opacity: 1;
-                    transform: translateY(0);
-                }
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: scale(0);
             }
-        </style>
-    </head>
-    <body>
-        <div class="presentation-container">
-            <!-- Slide 1: Title -->
-            <div class="slide active">
-                <div class="slide-number">1 / 9</div>
-                <h1>📚 What is Religion?<br>What is Philosophy?</h1>
-                <div class="course-info">
-                    <h3>PHL 101 — Comparative Religions I</h3>
-                    <p class="subtitle">Professor Xavier Honablue, M.Ed.</p>
-                    <p><strong>Background: Mathematics • Computer Science • Philosophy • Education</strong></p>
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .slide {
+                padding: 30px 20px;
+            }
+            
+            h1 {
+                font-size: 2.5em;
+            }
+            
+            h2 {
+                font-size: 2em;
+            }
+            
+            .example-section {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="presentation-container">
+        <div class="activity-timer" id="timer"></div>
+
+        <!-- Slide 1: Title -->
+        <div class="slide active">
+            <div class="slide-number">1 / 9</div>
+            <h1>📚 What is Religion?<br>What is Philosophy?</h1>
+            <div class="course-info">
+                <h3>PHL 101 — Comparative Religions I</h3>
+                <p class="subtitle">Professor Xavier Honablue, M.Ed.</p>
+                <p><strong>Background: Mathematics • Computer Science • Philosophy • Education</strong></p>
+            </div>
+            <div class="subtitle">
+                "We're going to explore the great traditions of the world — Judaism, Christianity, Islam, 
+                but also Eastern, African, and Indigenous traditions. Our job is not to judge, 
+                but to think critically, compare, and engage."
+            </div>
+        </div>
+
+        <!-- Slide 2: Course Objectives -->
+        <div class="slide">
+            <div class="slide-number">2 / 9</div>
+            <h2>🎯 Our Journey Together</h2>
+            <div class="objective-list">
+                <h3>What We'll Explore:</h3>
+                <ul>
+                    <li><strong>World Religions:</strong> Christianity, Islam, Judaism, Hinduism, Buddhism, Taoism</li>
+                    <li><strong>Indigenous Traditions:</strong> Native American, African, Australian Aboriginal</li>
+                    <li><strong>Philosophical Approaches:</strong> Western and Eastern philosophical traditions</li>
+                    <li><strong>Critical Thinking:</strong> Comparing beliefs, practices, and worldviews</li>
+                    <li><strong>Personal Reflection:</strong> Understanding your own beliefs and assumptions</li>
+                </ul>
+            </div>
+            <div class="content-card">
+                <h3>🌍 Our Approach</h3>
+                <p>We approach each tradition with respect, curiosity, and scholarly rigor. 
+                We seek to understand rather than judge, to compare rather than compete, 
+                and to engage thoughtfully with humanity's greatest questions.</p>
+            </div>
+        </div>
+
+        <!-- Slide 3: Icebreaker Questions -->
+        <div class="slide">
+            <div class="slide-number">3 / 9</div>
+            <h2>🤔 The Big Questions</h2>
+            <h3>Pair Discussion (10 minutes)</h3>
+            <div class="content-grid">
+                <div class="content-card">
+                    <div class="icon religion-icon">🕊️</div>
+                    <h3>What do you think religion is?</h3>
+                    <p>Consider: rituals, beliefs, communities, sacred texts, personal experiences, traditions passed down through generations.</p>
                 </div>
-                <div class="subtitle">
-                    "We're going to explore the great traditions of the world — Judaism, Christianity, Islam, 
-                    but also Eastern, African, and Indigenous traditions. Our job is not to judge, 
-                    but to think critically, compare, and engage."
+                <div class="content-card">
+                    <div class="icon philosophy-icon">🤔</div>
+                    <h3>What do you think philosophy is?</h3>
+                    <p>Think about: questioning, reasoning, logic, ethics, exploring fundamental concepts about existence and knowledge.</p>
+                </div>
+                <div class="content-card">
+                    <div class="icon overlap-icon">🔗</div>
+                    <h3>Where do the two overlap?</h3>
+                    <p>Consider: ultimate questions about reality, meaning, morality, and the nature of existence itself.</p>
                 </div>
             </div>
+            <p style="text-align: center; margin-top: 30px; font-size: 1.2em; color: #2c3e50;">
+                <strong>Share your thoughts with a partner, then we'll create our class word cloud!</strong>
+            </p>
+        </div>
 
-            <!-- Additional slides would continue here -->
-            <div class="slide">
-                <div class="slide-number">2 / 9</div>
-                <h2>Our Journey Together</h2>
-                <div class="content-card">
-                    <h3>What We'll Explore:</h3>
-                    <ul style="text-align: left; margin: 20px 0;">
-                        <li><strong>World Religions:</strong> Christianity, Islam, Judaism, Hinduism, Buddhism, Taoism</li>
-                        <li><strong>Indigenous Traditions:</strong> Native American, African, Australian Aboriginal</li>
-                        <li><strong>Philosophical Approaches:</strong> Western and Eastern philosophical traditions</li>
-                        <li><strong>Critical Thinking:</strong> Comparing beliefs, practices, and worldviews</li>
-                        <li><strong>Personal Reflection:</strong> Understanding your own beliefs and assumptions</li>
+        <!-- Slide 4: Philosophy Meets Religion -->
+        <div class="slide">
+            <div class="slide-number">4 / 9</div>
+            <h2>🧠 Philosophy Meets Religion</h2>
+            
+            <div class="content-grid">
+                <div class="content-card philosophy-example">
+                    <h3>📚 Philosophy</h3>
+                    <p><strong>From Greek: "Philosophia" = Love of Wisdom</strong></p>
+                    <ul>
+                        <li>Asking fundamental questions</li>
+                        <li>Using reason and logic</li>
+                        <li>Challenging assumptions</li>
+                        <li>Seeking understanding through inquiry</li>
+                        <li>Socrates, Plato, Aristotle, Kant, Nietzsche</li>
+                    </ul>
+                </div>
+                
+                <div class="content-card religion-example">
+                    <h3>🕊️ Religion</h3>
+                    <p><strong>From Latin: "Religare" = To Bind Together</strong></p>
+                    <ul>
+                        <li>Lived traditions and practices</li>
+                        <li>Sacred stories and myths</li>
+                        <li>Rituals and ceremonies</li>
+                        <li>Community and belonging</li>
+                        <li>Moses, Jesus, Muhammad, Buddha</li>
                     </ul>
                 </div>
             </div>
+
+            <div class="content-card" style="margin-top: 30px;">
+                <h3>🤝 Both Ask the Same Core Questions:</h3>
+                <div class="big-questions">
+                    <div class="question-tag">What is ultimate reality?</div>
+                    <div class="question-tag">Why are we here?</div>
+                    <div class="question-tag">How should we live?</div>
+                    <div class="question-tag">What happens after death?</div>
+                    <div class="question-tag">What is the meaning of life?</div>
+                </div>
+            </div>
         </div>
 
-        <!-- Navigation -->
-        <div class="navigation">
-            <button class="nav-btn" onclick="previousSlide()" id="prevBtn">← Previous</button>
-            <button class="nav-btn" onclick="nextSlide()" id="nextBtn">Next →</button>
-        </div>
-
-        <script>
-            let currentSlide = 0;
-            const slides = document.querySelectorAll('.slide');
-            const totalSlides = slides.length;
-
-            function showSlide(n) {
-                slides[currentSlide].classList.remove('active');
-                currentSlide = (n + totalSlides) % totalSlides;
-                slides[currentSlide].classList.add('active');
+        <!-- Slide 5: Examples -->
+        <div class="slide">
+            <div class="slide-number">5 / 9</div>
+            <h2>💡 A Tale of Two Searches</h2>
+            <div class="example-section">
+                <div class="example-card philosophy-example">
+                    <h3>🏛️ Philosophy: Plato's Cave</h3>
+                    <p><strong>The Story:</strong> Prisoners chained in a cave mistake shadows on the wall for reality until one escapes and discovers the true world of sunlight.</p>
+                    <p><strong>The Message:</strong> We must question what we think we know. True knowledge comes through reason, not just accepting what we see.</p>
+                    <p><strong>The Search:</strong> Truth through questioning and rational inquiry.</p>
+                </div>
                 
-                document.getElementById('prevBtn').disabled = currentSlide === 0;
-                document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
-            }
+                <div class="example-card religion-example">
+                    <h3>⛰️ Religion: Moses and the Exodus</h3>
+                    <p><strong>The Story:</strong> Moses leads the Israelites out of slavery in Egypt, receives the Ten Commandments, and guides them to the Promised Land.</p>
+                    <p><strong>The Message:</strong> God liberates the oppressed and provides moral guidance for how to live.</p>
+                    <p><strong>The Search:</strong> Freedom and meaning through divine revelation and community.</p>
+                </div>
+            </div>
+            
+            <div class="content-card">
+                <h3>🎯 Both Stories Share:</h3>
+                <p style="font-size: 1.3em; color: #2c3e50;">
+                    <strong>A journey from darkness to light, from bondage to freedom, from ignorance to truth.</strong><br>
+                    They represent humanity's eternal quest to understand reality and find meaning.
+                </p>
+            </div>
+        </div>
 
-            function nextSlide() {
-                if (currentSlide < totalSlides - 1) {
-                    showSlide(currentSlide + 1);
-                }
-            }
+        <!-- Slide 6: Group Activity -->
+        <div class="slide">
+            <div class="slide-number">6 / 9</div>
+            <h2>🎲 Activity: Sorting the Big Questions</h2>
+            <h3>Small Groups (15 minutes)</h3>
+            
+            <div class="content-card">
+                <h3>📝 Your Mission:</h3>
+                <p>Sort these questions into three categories: <strong>Philosophy</strong>, <strong>Religion</strong>, or <strong>Both</strong></p>
+            </div>
 
-            function previousSlide() {
-                if (currentSlide > 0) {
-                    showSlide(currentSlide - 1);
-                }
-            }
+            <div class="big-questions">
+                <div class="question-tag">Does God exist?</div>
+                <div class="question-tag">What happens after we die?</div>
+                <div class="question-tag">Why is there suffering?</div>
+                <div class="question-tag">What is justice?</div>
+                <div class="question-tag">Do humans have free will?</div>
+                <div class="question-tag">What is the meaning of life?</div>
+                <div class="question-tag">How should we treat others?</div>
+                <div class="question-tag">What is consciousness?</div>
+                <div class="question-tag">Is there absolute truth?</div>
+                <div class="question-tag">What is love?</div>
+            </div>
 
-            // Keyboard navigation
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'ArrowRight' || e.key === ' ') {
-                    nextSlide();
-                } else if (e.key === 'ArrowLeft') {
-                    previousSlide();
+            <div class="content-card">
+                <h3>🔮 Prediction:</h3>
+                <p style="font-size: 1.2em;">Most questions will end up in the <strong>"Both"</strong> category! 
+                This shows how philosophy and religion are deeply interconnected in addressing 
+                humanity's most fundamental concerns.</p>
+            </div>
+        </div>
+
+        <!-- Slide 7: Defining Religion -->
+        <div class="slide">
+            <div class="slide-number">7 / 9</div>
+            <h2>🔬 How Scholars Define Religion</h2>
+            <h3>Three Famous Definitions</h3>
+
+            <div class="definition-box">
+                <h3>👥 Émile Durkheim (1858-1917)</h3>
+                <p><strong>"Religion is the social glue that binds communities together."</strong></p>
+                <p>Focus: Religion creates solidarity, shared identity, and moral order in society. 
+                Think of how religious holidays bring families together, or how shared beliefs unite communities.</p>
+            </div>
+
+            <div class="definition-box">
+                <h3>👻 Edward Tylor (1832-1917)</h3>
+                <p><strong>"Religion is belief in spiritual beings."</strong></p>
+                <p>Focus: At its core, religion involves belief in gods, spirits, souls, or supernatural forces. 
+                From ancestor worship to monotheism, spiritual beings are central.</p>
+            </div>
+
+            <div class="definition-box">
+                <h3>💖 Paul Tillich (1886-1965)</h3>
+                <p><strong>"Religion is ultimate concern."</strong></p>
+                <p>Focus: Religion addresses what matters most to us - our deepest values, fears, and hopes. 
+                It's about what we're willing to sacrifice everything for.</p>
+            </div>
+
+            <div class="content-card">
+                <h3>🤔 Discussion Question:</h3>
+                <p style="font-size: 1.2em;">Which definition resonates most with you? Why? 
+                Can you think of examples that fit one definition but not the others?</p>
+            </div>
+        </div>
+
+        <!-- Slide 8: Interactive Discussion -->
+        <div class="slide">
+            <div class="slide-number">8 / 9</div>
+            <h2>💬 Let's Debate!</h2>
+            
+            <div class="content-grid">
+                <div class="content-card">
+                    <h3>🤝 Team Durkheim</h3>
+                    <p><strong>Religion = Social Glue</strong></p>
+                    <ul>
+                        <li>Explains why religion is found in every society</li>
+                        <li>Shows religion's practical social function</li>
+                        <li>Helps understand religious conflicts</li>
+                        <li>Examples: Christmas bringing families together, Islamic community prayers</li>
+                    </ul>
+                </div>
+                
+                <div class="content-card">
+                    <h3>👻 Team Tylor</h3>
+                    <p><strong>Religion = Spiritual Beings</strong></p>
+                    <ul>
+                        <li>Clear, specific definition</li>
+                        <li>Distinguishes religion from philosophy</li>
+                        <li>Explains prayer, worship, and ritual</li>
+                        <li>Examples: Hindu gods, Christian Trinity, ancestor spirits</li>
+                    </ul>
+                </div>
+                
+                <div class="content-card">
+                    <h3>💖 Team Tillich</h3>
+                    <p><strong>Religion = Ultimate Concern</strong></p>
+                    <ul>
+                        <li>Includes secular "religions" (nationalism, sports)</li>
+                        <li>Focuses on personal meaning</li>
+                        <li>Explains religious passion and devotion</li>
+                        <li>Examples: Environmental activism as religion, patriotism</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="content-card">
+                <h3>🎯 Challenge Question:</h3>
+                <p>Is Buddhism a religion? How would each definition handle this case? 
+                (Buddhism often lacks belief in gods but has communities, practices, and ultimate concerns about suffering and enlightenment.)</p>
+            </div>
+        </div>
+
+        <!-- Slide 9: Wrap-Up & Homework -->
+        <div class="slide">
+            <div class="slide-number">9 / 9</div>
+            <h2>🎯 Exit Ticket & Next Steps</h2>
+            
+            <div class="content-card">
+                <h3>📝 Before You Leave:</h3>
+                <p style="font-size: 1.3em;">Write on a card: <strong>One question about life/religion you hope this class will answer.</strong></p>
+                <p>We'll revisit these at the end of the semester to see how our journey has evolved your thinking!</p>
+            </div>
+
+            <div class="homework-section">
+                <h3>🏠 Homework (Fun & Low-Stakes)</h3>
+                <ul>
+                    <li><strong>Watch:</strong> A short video
+                        <ul>
+                            <li>CrashCourse Philosophy #1 (YouTube)</li>
+                            <li>OR TedEd "What is Religion?"</li>
+                        </ul>
+                    </li>
+                    <li><strong>Write:</strong> One paragraph answering: "How do you personally define religion?"</li>
+                    <li><strong>Reflect:</strong> Think about a religious or philosophical question that intrigues you</li>
+                </ul>
+            </div>
+
+            <div class="content-card">
+                <h3>🌟 Looking Ahead</h3>
+                <p>Next class: We'll explore the origins of religious thought and begin our journey 
+                through the world's great traditions. Get ready to travel through time and across cultures!</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="navigation">
+        <button class="nav-btn" onclick="previousSlide()" id="prevBtn">← Previous</button>
+        <button class="nav-btn" onclick="nextSlide()" id="nextBtn">Next →</button>
+    </div>
+
+    <!-- Slide Indicators -->
+    <div class="slide-indicator" id="slideIndicator"></div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        // Create slide indicators
+        const indicatorContainer = document.getElementById('slideIndicator');
+        for (let i = 0; i < totalSlides; i++) {
+            const dot = document.createElement('div');
+            dot.className = 'indicator-dot';
+            if (i === 0) dot.classList.add('active');
+            dot.onclick = () => goToSlide(i);
+            indicatorContainer.appendChild(dot);
+        }
+
+        function showSlide(n) {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+            
+            // Update indicators
+            document.querySelectorAll('.indicator-dot').forEach((dot, index) => {
+                dot.classList.toggle('active', index === currentSlide);
+            });
+            
+            // Update navigation buttons
+            document.getElementById('prevBtn').disabled = currentSlide === 0;
+            document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+            
+            // Hide timer by default
+            document.getElementById('timer').style.display = 'none';
+            
+            // Start timer if applicable
+            if (timerSlides[currentSlide]) {
+                startTimer(timerSlides[currentSlide]);
+            }
+        }
+
+        function nextSlide() {
+            if (currentSlide < totalSlides - 1) {
+                showSlide(currentSlide + 1);
+            }
+        }
+
+        function previousSlide() {
+            if (currentSlide > 0) {
+                showSlide(currentSlide - 1);
+            }
+        }
+
+        function goToSlide(n) {
+            showSlide(n);
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                nextSlide();
+            } else if (e.key === 'ArrowLeft') {
+                previousSlide();
+            }
+        });
+
+        // Timer functionality for activities
+        function startTimer(minutes) {
+            const timer = document.getElementById('timer');
+            timer.style.display = 'block';
+            let seconds = minutes * 60;
+            
+            const interval = setInterval(() => {
+                const mins = Math.floor(seconds / 60);
+                const secs = seconds % 60;
+                timer.textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
+                
+                if (seconds <= 0) {
+                    clearInterval(interval);
+                    timer.textContent = "Time's up!";
+                    timer.style.background = 'rgba(46, 204, 113, 0.9)';
                 }
+                seconds--;
+            }, 1000);
+        }
+
+        // Auto-start timers for specific slides
+        const timerSlides = {
+            2: 10, // Icebreaker - 10 minutes
+            5: 15  // Group Activity - 15 minutes
+        };
+
+        // Initialize
+        showSlide(0);
+
+        // Add some interactive elements for engagement
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add click animations to question tags
+            document.querySelectorAll('.question-tag').forEach(tag => {
+                tag.addEventListener('click', function() {
+                    this.style.transform = 'scale(1.1)';
+                    setTimeout(() => {
+                        this.style.transform = 'scale(1)';
+                    }, 200);
+                });
             });
 
-            // Initialize
-            showSlide(0);
-        </script>
-    </body>
-    </html>
-    """
+            // Add hover effects to definition boxes
+            document.querySelectorAll('.definition-box').forEach(box => {
+                box.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateX(10px)';
+                });
+                box.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateX(0)';
+                });
+            });
+        });
+
+        // Add fullscreen capability
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        // Add F key for fullscreen
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'f' || e.key === 'F') {
+                toggleFullscreen();
+            }
+        });
+
+        // Add presentation mode (hide navigation)
+        let presentationMode = false;
+        function togglePresentationMode() {
+            presentationMode = !presentationMode;
+            const nav = document.querySelector('.navigation');
+            const indicators = document.querySelector('.slide-indicator');
+            
+            if (presentationMode) {
+                nav.style.display = 'none';
+                indicators.style.display = 'none';
+            } else {
+                nav.style.display = 'flex';
+                indicators.style.display = 'flex';
+            }
+        }
+
+        // Add P key for presentation mode
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'p' || e.key === 'P') {
+                togglePresentationMode();
+            }
+        });
+
+        // Add slide notes for presenter (press N to toggle)
+        const slideNotes = {
+            0: "Welcome students warmly. Share your background briefly. Set the collaborative tone for the semester.",
+            1: "Emphasize that we're studying diverse traditions from around the world. Mention specific examples students might relate to.",
+            2: "Give students full 10 minutes to discuss. Walk around and listen to their conversations. Take notes for the word cloud.",
+            3: "This is the key conceptual slide. Make sure students understand both definitions before moving on.",
+            4: "Use this to show how both philosophy and religion address the same human needs and questions.",
+            5: "Give groups time to really discuss. The goal is for them to see most questions belong to 'both' categories.",
+            6: "This is where students start to see the complexity of defining religion. Encourage debate!",
+            7: "Let students really debate here. Don't worry if they get passionate - that means they're engaged!",
+            8: "Collect the exit tickets - these are valuable data for how to shape the rest of the course."
+        };
+
+        let showingNotes = false;
+        function toggleNotes() {
+            showingNotes = !showingNotes;
+            let noteDiv = document.getElementById('presenter-notes');
+            
+            if (showingNotes) {
+                if (!noteDiv) {
+                    noteDiv = document.createElement('div');
+                    noteDiv.id = 'presenter-notes';
+                    noteDiv.style.cssText = `
+                        position: fixed;
+                        bottom: 150px;
+                        left: 30px;
+                        right: 30px;
+                        background: rgba(0,0,0,0.9);
+                        color: white;
+                        padding: 20px;
+                        border-radius: 10px;
+                        font-size: 1.1em;
+                        z-index: 2000;
+                        max-width: 600px;
+                        margin: 0 auto;
+                    `;
+                    document.body.appendChild(noteDiv);
+                }
+                noteDiv.textContent = slideNotes[currentSlide] || "No notes for this slide.";
+                noteDiv.style.display = 'block';
+            } else if (noteDiv) {
+                noteDiv.style.display = 'none';
+            }
+        }
+
+        // Add N key for notes
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'n' || e.key === 'N') {
+                toggleNotes();
+            }
+        });
+
+        // Update notes when slide changes
+        const originalShowSlideWithNotes = showSlide;
+        showSlide = function(n) {
+            originalShowSlideWithNotes.call(this, n);
+            if (showingNotes) {
+                toggleNotes();
+                toggleNotes(); // Toggle twice to refresh
+            }
+        };
+    </script>
+</body>
+</html>"""
     
     # Display the HTML in a component
     st.components.v1.html(html_content, height=600, scrolling=True)
@@ -853,6 +1491,7 @@ def display_professor_lecture():
     st.markdown("- Use arrow keys or click Previous/Next buttons")
     st.markdown("- Press 'F' for fullscreen mode")
     st.markdown("- Press 'N' to toggle presenter notes")
+    st.markdown("- Press 'P' for presentation mode")
 
 def display_assignment1():
     """Display Assignment 1: Philosopher Conversations"""
