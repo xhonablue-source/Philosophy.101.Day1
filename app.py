@@ -1,6 +1,6 @@
 """
 PHL 101 Day 1 - Complete Interactive Philosophy & Religion App
-WITH REAL LLM INTEGRATION - All functionalities included
+WITH REAL CLAUDE API INTEGRATION - All functionalities included
 Students get dynamic philosopher conversations with secure backend
 """
 
@@ -14,13 +14,13 @@ from typing import List, Dict, Optional
 # 🔐 SECURE API KEY HANDLING
 # Your API key is stored in Streamlit secrets - students never see it
 try:
-    OPENAI_API_KEY = st.secrets["OPENAI_API_KEY"]
+    ANTHROPIC_API_KEY = st.secrets["ANTHROPIC_API_KEY"]
 except KeyError:
-    OPENAI_API_KEY = None
+    ANTHROPIC_API_KEY = None
 
 # Fallback: Allow manual API key input for testing
-if not OPENAI_API_KEY:
-    OPENAI_API_KEY = st.sidebar.text_input("🔑 OpenAI API Key (for testing)", type="password")
+if not ANTHROPIC_API_KEY:
+    ANTHROPIC_API_KEY = st.sidebar.text_input("🔑 Anthropic API Key (for testing)", type="password")
 
 # Configure page
 st.set_page_config(
@@ -517,17 +517,17 @@ RESOURCES = {
     ]
 }
 
-def get_philosopher_response(philosopher_name: str, question: str, question_type: str, openai_api_key: str = None) -> str:
-    """Generate a response from the specified philosopher using REAL LLM APIs"""
+def get_philosopher_response(philosopher_name: str, question: str, question_type: str, anthropic_api_key: str = None) -> str:
+    """Generate a response from the specified philosopher using Claude API"""
     
     # Use the server's API key (hidden from students)
-    api_key = OPENAI_API_KEY
+    api_key = ANTHROPIC_API_KEY
     
     # If no API key available, return helpful message
     if not api_key:
         return """🚫 **Server Configuration Issue**
         
-The instructor needs to set up the API key on the server. 
+The instructor needs to set up the Anthropic API key on the server. 
 Students don't need to worry about this - just let your instructor know!
 
 *This message only appears when the server isn't properly configured.*"""
@@ -553,32 +553,33 @@ Respond in character as {profile['name']}, drawing on your specific view of reli
 
     user_message = f"Professor {profile['name']}, I'm studying argument structure and have a question about {question_type}: {question}"
     
-    # Make secure API call using modern OpenAI library
+    # Make API call to Anthropic's Claude
     headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json"
+        "x-api-key": api_key,
+        "Content-Type": "application/json",
+        "anthropic-version": "2023-06-01"
     }
     
     data = {
-        "model": "gpt-3.5-turbo",
-        "messages": [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_message}
-        ],
+        "model": "claude-3-haiku-20240307",
         "max_tokens": 400,
-        "temperature": 0.7
+        "system": system_prompt,
+        "messages": [
+            {"role": "user", "content": user_message}
+        ]
     }
     
     try:
         response = requests.post(
-            "https://api.openai.com/v1/chat/completions",
+            "https://api.anthropic.com/v1/messages",
             headers=headers,
             json=data,
             timeout=30
         )
         
         if response.status_code == 200:
-            return response.json()["choices"][0]["message"]["content"]
+            response_data = response.json()
+            return response_data["content"][0]["text"]
         elif response.status_code == 401:
             return "🔑 **API Key Issue** - Please contact your instructor to fix the server configuration."
         elif response.status_code == 429:
@@ -587,7 +588,7 @@ Respond in character as {profile['name']}, drawing on your specific view of reli
             return f"🚫 **Server Error** - Status {response.status_code}. Please try again or contact your instructor."
             
     except requests.exceptions.Timeout:
-        return "⏰ **Timeout** - The AI is taking too long to respond. Please try again."
+        return "⏰ **Timeout** - Claude is taking too long to respond. Please try again."
     except requests.exceptions.RequestException as e:
         return f"🌐 **Connection Error** - Please check your internet connection and try again."
     except Exception as e:
@@ -745,10 +746,10 @@ def display_assignment1():
         """)
     
     # Show system status
-    if OPENAI_API_KEY:
+    if ANTHROPIC_API_KEY:
         st.success("✅ **System Online** - Dynamic philosopher conversations enabled!")
     else:
-        st.error("❌ **Server Setup Needed** - Contact instructor to enable LLM responses")
+        st.error("❌ **Server Setup Needed** - Contact instructor to enable Claude API responses")
     
     # Progress tracking
     st.markdown("## 📊 Your Progress")
@@ -1124,11 +1125,11 @@ def sidebar_navigation() -> str:
     # System status in sidebar
     st.sidebar.markdown("---")
     st.sidebar.markdown("## 🔧 System Status")
-    if OPENAI_API_KEY:
-        st.sidebar.success("✅ LLM Integration Active")
+    if ANTHROPIC_API_KEY:
+        st.sidebar.success("✅ Claude API Active")
         st.sidebar.caption("Dynamic philosopher conversations enabled")
     else:
-        st.sidebar.error("❌ LLM Setup Needed")
+        st.sidebar.error("❌ Claude API Setup Needed")
         st.sidebar.caption("Contact instructor to enable AI features")
             
     return mode.split()[1].lower()  # Return just the key part
