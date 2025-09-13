@@ -18,6 +18,10 @@ try:
 except KeyError:
     OPENAI_API_KEY = None
 
+# Fallback: Allow manual API key input for testing
+if not OPENAI_API_KEY:
+    OPENAI_API_KEY = st.sidebar.text_input("🔑 OpenAI API Key (for testing)", type="password")
+
 # Configure page
 st.set_page_config(
     page_title="PHL 101 - What is Religion? What is Philosophy?",
